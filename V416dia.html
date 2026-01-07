@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, landscape=yes">
+    <title>环境保护对话 - XUSFUNCHINESE</title>
+    <style>
+        :root {
+            --primary: #01579b; --accent: #e1f5fe; --gold: #fbc02d;
+            --pinyin: #ff0000; --night-sky: radial-gradient(circle at center, #001f3f 0%, #000510 100%);
+        }
+        body { margin: 0; font-family: "Arial", sans-serif; background: linear-gradient(135deg, #0277bd 0%, #002f6c 100%); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        
+        /* 金光闪闪的Cover */
+        #cover-page {
+            position: fixed; top:0; left:0; width:100%; height:100%; background:var(--night-sky);
+            z-index:5000; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer;
+        }
+        .shiny-title {
+            font-size: 10vw; font-weight: 900; text-align: center;
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
+            animation: shine 3s infinite linear; line-height: 1.1;
+        }
+        @keyframes shine { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+
+        @keyframes confettiFall {
+            0% { top: -10vh; transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { top: 110vh; transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        header { background: rgba(255,255,255,0.95); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; }
+        .nav-btns button { padding: 8px 15px; margin-right: 5px; border-radius: 20px; border: 2px solid var(--primary); cursor: pointer; font-weight: bold; background: white; color: var(--primary); font-size: 13px; }
+        .active-mode { background: var(--primary) !important; color: white !important; }
+        
+        main { flex: 1; display: flex; padding: 20px; gap: 15px; overflow: hidden; position: relative; }
+        #left-panel { flex: 0.7; background: rgba(255,255,255,0.95); border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid var(--accent); position: relative; }
+        #right-panel { flex: 1.3; background: rgba(255,255,255,0.95); border-radius: 30px; padding: 25px; overflow-y: auto; border: 4px solid var(--accent); }
+        
+        .dialogue-box { margin-bottom: 20px; padding: 15px; border-radius: 12px; background: #fff; border-left: 6px solid var(--primary); cursor: pointer; transition: 0.2s; text-align: center; }
+        .dialogue-box:hover { background: #f0faff; }
+        
+        ruby { font-size: 26px; font-weight: 600; margin: 0 3px; display: inline-flex; flex-direction: column-reverse; align-items: center; }
+        rt { font-size: 14px; color: var(--pinyin); font-weight: bold; margin-bottom: 4px; }
+        
+        #list-container, #quiz-container { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 200; overflow-y: auto; padding: 40px; box-sizing: border-box; }
+        .quiz-option { width: 100%; padding: 15px; margin: 8px 0; border: 2px solid var(--primary); border-radius: 12px; background: white; cursor: pointer; font-size: 18px; font-weight: bold; }
+        
+        #timer-bar { position: absolute; top: 0; left: 0; height: 8px; background: #ff5252; width: 0%; transition: width 0.1s linear; border-radius: 4px; }
+        .watermark { position: fixed; bottom: 10px; right: 20px; color: rgba(255,255,255,0.4); font-weight: bold; font-style: italic; pointer-events: none; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+<div id="cover-page" onclick="enterApp()">
+    <div class="shiny-title">环保<br>对话</div>
+    <p style="color:white; margin-top: 30px; letter-spacing: 2px;">CLICK TO START</p>
+</div>
+
+<div class="watermark">XUSFUNCHINESE</div>
+
+<header>
+    <div class="nav-btns">
+        <button onclick="setMode('study')" id="btn-study" class="active-mode">📖 学习</button>
+        <button onclick="setMode('quiz')" id="btn-quiz">📝 测试</button>
+        <button onclick="setMode('rush')" id="btn-rush" style="border-color: #ff5252; color: #ff5252;">⚡ RUSH</button>
+        <button onclick="setMode('mistake')" id="btn-mistake" style="border-color: #7b1fa2; color: #7b1fa2;">❌ 错题本(<span id="mistake-count">0</span>)</button>
+        <button onclick="setMode('list')" id="btn-list">📜 列表</button>
+    </div>
+    <div id="stat-display" style="font-weight: bold;">进度: <span id="progress-text">1</span>/<span id="total-groups">20</span></div>
+</header>
+
+<main>
+    <div id="study-ui" style="display: flex; width: 100%; height: 100%; gap: 15px;">
+        <div id="left-panel">
+            <div id="timer-bar"></div>
+            <div id="emoji-display" style="font-size: 100px;">🏔️</div>
+            <button onclick="playCurrentCard()" style="margin-top:20px; padding:15px 30px; border-radius:30px; background:var(--primary); color:white; border:none; cursor:pointer; font-weight:bold;">🔊 朗读当前卡</button>
+            <div id="rush-score-ui" style="display:none; margin-top:10px; font-size:24px; color:red; font-weight:bold;">得分: <span id="rush-score">0</span></div>
+            <div style="margin-top:30px; display:flex; gap:10px;">
+                <button onclick="prev()" style="padding:10px 20px; border-radius:10px;">◀</button>
+                <button onclick="next()" style="background:var(--gold); border:none; padding:10px 20px; font-weight:bold; border-radius:10px;">▶</button>
+            </div>
+        </div>
+        <div id="right-panel"><div id="content-area"></div></div>
+    </div>
+    <div id="list-container">
+        <button onclick="setMode('study')" style="position:absolute; top:10px; right:10px; padding:10px; background:red; color:white; border:none; border-radius:5px; z-index:10;">关闭</button>
+        <div id="list-content"></div>
+    </div>
+    <div id="quiz-container">
+        <div id="quiz-content" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <h2 id="quiz-title">测试模式</h2>
+            <div id="quiz-prompt" style="font-size:24px; margin:20px 0; padding:25px; background:#f0f7ff; border-radius:15px; border:2px solid var(--primary);"></div>
+            <div id="quiz-options"></div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const database = [
+        {
+            emoji: "🏔️",
+            lines: [
+                {cn: "张天明他们四个人来北京已经两三个月了，天气也逐渐暖和了。", py: "Zhāng Tiānmíng tāmen sì gè rén lái Běijīng yǐjīng liǎng sān ge yuè le, tiānqì yě zhújiàn nuǎnhuo le.", en: "Zhang Tianming and the other three have been in Beijing for two or three months, and the weather has gradually become warmer."},
+                {cn: "他们每天上课的上课，找工作的找工作，半个月没见面了。", py: "tāmen měitiān shàngkè de shàngkè, zhǎo gōngzuò de zhǎo gōngzuò, bàn ge yuè méi jiànmiàn le.", en: "Some attend classes every day, others look for jobs, and they haven't seen each other for half a month."},
+                {cn: "今天是星期六，大家都想轻松轻松，天明建议去爬山。", py: "jīntiān shì xīngqīliù, dàjiā dōu xiǎng qīngsōng qīngsōng, Tiānmíng jiànyì qù páshān.", en: "Today is Saturday, everyone wants to relax a bit. Tianming suggests going mountain climbing."},
+                {cn: "丽莎和雪梅不反对，柯林也觉得这个建议不错。", py: "Lìshā hé Xuěméi bù fǎnduì, Kēlín yě juéde zhège jiànyì bùcuò.", en: "Lisa and Xuemei do not oppose it, and Colin also thinks the suggestion is good."},
+                {cn: "他说正好他的德国朋友马克也想去。", py: "tā shuō zhènghǎo tā de Déguó péngyou Mǎkè yě xiǎng qù.", en: "He says his German friend Mark also wants to go."},
+                {cn: "可是怎么去呢？坐出租车吧，太贵，而且也没意思。", py: "kěshì zěnme qù ne? zuò chūzūchē ba, tài guì, érqiě yě méi yìsi.", en: "But how should we go? Taking a taxi is too expensive and not interesting."},
+                {cn: "坐公交车吧，人太多，太挤。", py: "zuò gōnggòngqìchē ba, rén tài duō, tài jǐ.", en: "Taking the bus has too many people and is too crowded."},
+                {cn: "柯林想出了一个主意，骑自行车！", py: "Kēlín xiǎngchūle yī ge zhǔyi, qí zìxíngchē!", en: "Colin came up with an idea: ride bicycles!"},
+                {cn: "大家马上就同意了，觉得骑自行车又能锻炼身体，又省钱，而且有益于环境保护。", py: "dàjiā mǎshàng jiù tóngyì le, juéde qí zìxíngchē yòu néng duànliàn shēntǐ, yòu shěng qián, érqiě yǒuyì yú huánjìng bǎohù.", en: "Everyone immediately agreed, thinking that riding bicycles can exercise the body, save money, and is beneficial to environmental protection."},
+                {cn: "他们早上很早就出发了。", py: "tāmen zǎoshang hěn zǎo jiù chūfā le.", en: "They set off very early in the morning."},
+                {cn: "骑了很长的一段路以后，有点热，也有点累，就下了车，一边推着车，一边聊了起来。", py: "qí le hěn cháng de yī duàn lù yǐhòu, yǒudiǎn rè, yě yǒudiǎn lèi, jiù xià le chē, yībiān tuīzhe chē, yībiān liáo le qǐlai.", en: "After riding a long stretch, they felt a bit hot and tired, so they got off the bikes and chatted while pushing them."},
+                {cn: "这儿的空气比城里好，雾霾也没有那么严重。", py: "zhèr de kōngqì bǐ chénglǐ hǎo, wùmái yě méiyǒu nàme yánzhòng.", en: "The air here is better than in the city, and the smog is not so severe."},
+                {cn: "到处都是绿色，看着真舒服！", py: "dàochù dōu shì lǜsè, kànzhe zhēn shūfu!", en: "Everywhere is green; it looks really comfortable!"},
+                {cn: "哎呀，渴死了，你们看，一瓶水都喝完了！", py: "āiyā, kě sǐ le, nǐmen kàn, yī píng shuǐ dōu hē wán le!", en: "Oh no, I'm dying of thirst. Look, the bottle of water is all gone!"},
+                {cn: "这儿有垃圾回收筒吗？空瓶子不能随便乱扔。", py: "zhèr yǒu lājī huíshōu tǒng ma? kōng píngzi bù néng suíbiàn luàn rēng.", en: "Is there a recycling bin here? We can't just throw empty bottles anywhere."},
+                {cn: "对，我们应该注意环保，垃圾回收筒，你看，在树下边。", py: "duì, wǒmen yīnggāi zhùyì huánbǎo, lājī huíshōu tǒng, nǐ kàn, zài shù xiàbian.", en: "Yes, we should pay attention to environmental protection. The recycling bin—look, it's under the tree."},
+                {cn: "我好久没买瓶装水了。", py: "wǒ hǎojiǔ méi mǎi píngzhuāng shuǐ le.", en: "I haven't bought bottled water for a long time."},
+                {cn: "我们班有的同学建议，为了保护绿色的地球，自己带水喝，不买瓶装水。", py: "wǒmen bān yǒu de tóngxué jiànyì, wèile bǎohù lǜsè de dìqiú, zìjǐ dài shuǐ hē, bù mǎi píngzhuāng shuǐ.", en: "Some classmates in our class suggest bringing our own water to protect the green Earth and not buying bottled water."},
+                {cn: "这个建议不错。", py: "zhège jiànyì bùcuò.", en: "This suggestion is good."},
+                {cn: "哎，你们看，那边房子上有些亮亮的东西，是什么？", py: "āi, nǐmen kàn, nàbiān fángzi shàng yǒu xiē liàngliàng de dōngxi, shì shénme?", en: "Hey, look over there on the roof—what are those shiny things?"},
+                {cn: "是太阳能板吧？我在美国也看见过。", py: "shì tàiyángnéng bǎn ba? wǒ zài Měiguó yě kànjiànguo.", en: "Solar panels, right? I've seen them in America too."},
+                {cn: "用太阳能发电，太好了！", py: "yòng tàiyángnéng fādiàn, tài hǎo le!", en: "Using solar energy to generate electricity is great!"},
+                {cn: "要是自行车也能用太阳能发电，那多酷啊！", py: "yàoshi zìxíngchē yě néng yòng tàiyángnéng fādiàn, nà duō kù a!", en: "If bicycles could use solar power too, how cool that would be!"},
+                {cn: "现在世界上很多国家都有能源危机。", py: "xiànzài shìjiè shàng hěn duō guójiā dōu yǒu néngyuán wēijī.", en: "Many countries in the world now have energy crises."},
+                {cn: "如果世界各国都用太阳能和风能，那能节约多少石油和煤啊！而且多环保！哈哈……", py: "rúguǒ shìjiè gèguó dōu yòng tàiyángnéng hé fēngnéng, nà néng jiéyuē duōshǎo shíyóu hé méi a! érqiě duō huánbǎo! hāhā……", en: "If all countries used solar and wind energy, how much oil and coal could be saved! And how environmentally friendly! Haha..."},
+                {cn: "我听说中国政府规定办公室和公共场所，冬天暖气的温度不能高于摄氏20度，夏天空调的温度不能低于26度。", py: "wǒ tīngshuō Zhōngguó zhèngfǔ guīdìng bàngōngshì hé gōnggòng chǎngsuǒ, dōngtiān nuǎnqì de wēndù bù néng gāoyú Shèshì èrshí dù, xiàtiān kōngtiáo de wēndù bù néng dīyú èrshíliù dù.", en: "I heard the Chinese government stipulates that in offices and public places, heating in winter cannot exceed 20 degrees Celsius, and air conditioning in summer cannot be below 26 degrees."},
+                {cn: "这个规定我举双手赞成。", py: "zhège guīdìng wǒ jǔ shuāngshǒu zànchéng.", en: "I support this regulation with both hands."},
+                {cn: "你们还记得吗，我们美国学校的教室，冬天穿衬衫还出汗，夏天穿毛衣还冷得不得了。", py: "nǐmen hái jìde ma, wǒmen Měiguó xuéxiào de jiàoshì, dōngtiān chuān chènshān hái chūhàn, xiàtiān chuān máoyī hái lěng de bùdéliǎo.", en: "Do you remember our American school classrooms? In winter we'd sweat in shirts, in summer we'd freeze in sweaters."},
+                {cn: "可不是吗，太浪费了。", py: "kě bùshì ma, tài làngfèi le.", en: "Exactly, it's too wasteful."},
+                {cn: "我听说现在不少人去餐厅吃饭自己带餐具，不用一次性的。", py: "wǒ tīngshuō xiànzài bùshǎo rén qù cāntīng chīfàn zìjǐ dài cānjù, bù yòng yícìxìng de.", en: "I heard many people now bring their own tableware to restaurants and don't use disposable ones."},
+                {cn: "我觉得这个做法很好，要不然每年要砍多少树啊？", py: "wǒ juéde zhège zuòfǎ hěn hǎo, yàobùrán měinián yào kǎn duōshǎo shù a?", en: "I think this is great; otherwise, how many trees would be cut down each year?"},
+                {cn: "除了上餐馆自己带筷子，买东西也得自己带包了。", py: "chúle shàng cānguǎn zìjǐ dài kuàizi, mǎi dōngxi yě děi zìjǐ dài bāo le.", en: "Besides bringing chopsticks to restaurants, you also need to bring your own bag for shopping."},
+                {cn: "对，现在中国超市不给塑料袋，要自己买，所以很多人都自己带包，这样一年不知道能减少多少白色污染！", py: "duì, xiànzài Zhōngguó chāoshì bù gěi sùliào dài, yào zìjǐ mǎi, suǒyǐ hěn duō rén dōu zìjǐ dài bāo, zhèyàng yī nián bù zhīdào néng jiǎnshǎo duōshǎo báisè wūrǎn!", en: "Yes, now Chinese supermarkets don't provide plastic bags—you have to buy them—so many people bring their own, reducing who knows how much white pollution in a year!"},
+                {cn: "还有汽车，不但要用很多能源，而且还对空气造成严重污染。", py: "hái yǒu qìchē, bùdàn yào yòng hěn duō néngyuán, érqiě hái duì kōngqì zàochéng yánzhòng wūrǎn.", en: "And cars not only use a lot of energy but also cause serious air pollution."},
+                {cn: "大家都应该像我们这样，少开车、多骑车、多走路，又环保节能、又有益于健康。", py: "dàjiā dōu yīnggāi xiàng wǒmen zhèyàng, shǎo kāichē, duō qíchē, duō zǒulù, yòu huánbǎo jié néng, yòu yǒuyì yú jiànkāng.", en: "Everyone should be like us: drive less, ride bikes and walk more—it's environmentally friendly, saves energy, and is good for health."},
+                {cn: "对，地球是我们的家，我们应该好好保护它！", py: "duì, dìqiú shì wǒmen de jiā, wǒmen yīnggāi hǎohǎo bǎohù tā!", en: "Yes, the Earth is our home; we should protect it well!"},
+                {cn: "我们应该从小地方做起，比如随手关灯，节约用水。", py: "wǒmen yīnggāi cóng xiǎo dìfang zuòqǐ, bǐrú suíshǒu guān dēng, jiéyuē yòng shuǐ.", en: "We should start from small things, like turning off lights when leaving and saving water."},
+                {cn: "好！同意！", py: "hǎo! tóngyì!", en: "Good! Agreed!"},
+                {cn: "哎，你们看，都到了山下了。我们开始爬山吧，看谁先到山上！加油！", py: "āi, nǐmen kàn, dōu dào le shānxià le. wǒmen kāishǐ páshān ba, kàn shuí xiān dào shān shàng! jiāyóu!", en: "Hey, look, we've reached the foot of the mountain. Let's start climbing—see who gets to the top first! Come on!"}
+            ]
+        }
+    ];
+
+    let currentIndex = 0, currentMode = 'study', score = 0, timer = null;
+    let mistakes = [];
+    const numGroups = Math.ceil(database[0].lines.length / 2);
+    document.getElementById('total-groups').innerText = numGroups;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function launchConfetti() {
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+        for (let i = 0; i < 150; i++) {
+            const p = document.createElement('div');
+            p.innerText = ['🎉','🌟','✨','🎊','💥'][Math.floor(Math.random()*5)];
+            p.style.position = 'fixed';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.top = '-10vh';
+            p.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            p.style.color = colors[Math.floor(Math.random() * colors.length)];
+            p.style.pointerEvents = 'none';
+            p.style.zIndex = '10000';
+            p.style.animation = 'confettiFall ' + (Math.random() * 3 + 4) + 's linear forwards';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 7000);
+        }
+    }
+
+    function initStars() {
+        const container = document.getElementById('star-container');
+        for(let i=0; i<100; i++) {
+            let s = document.createElement('div'); s.className = 'star';
+            s.style.setProperty('--angle', Math.random() * 360 + 'deg');
+            s.style.animationDuration = Math.random() * 1.5 + 0.8 + 's';
+            container.appendChild(s);
+        }
+    }
+
+    function generateRuby(text, pinyin) {
+        const chars = text.split('');
+        const pyWords = pinyin.split(' ');
+        let html = '';
+        let pyIdx = 0;
+        chars.forEach(c => {
+            if(/[\u4e00-\u9fa5]/.test(c)) {
+                html += `<ruby>${c}<rt>${pyWords[pyIdx] || ''}</rt></ruby>`;
+                pyIdx++;
+            } else {
+                html += c;
+            }
+        });
+        return html;
+    }
+
+    function render() {
+        const start = currentIndex * 2;
+        const cardLines = database[0].lines.slice(start, start + 2);
+        document.getElementById('emoji-display').innerText = database[0].emoji;
+        document.getElementById('progress-text').innerText = currentIndex + 1;
+
+        let html = '';
+        cardLines.forEach((line, idx) => {
+            const speaker = (start + idx) % 4 < 2 ? '叙述：' : '对话：';
+            html += `
+                <div class="dialogue-box" id="card-line-${idx}">
+                    <div style="font-weight:bold; color:var(--primary); margin-bottom:10px;">${speaker}</div>
+                    <div style="font-size:26px; margin:15px 0;">${line.cn}</div>
+                    <p style="color:#888; font-size:16px; text-align:center;">点击显示拼音和英文翻译</p>
+                </div>`;
+        });
+        document.getElementById('content-area').innerHTML = html;
+
+        cardLines.forEach((line, idx) => {
+            const box = document.getElementById(`card-line-${idx}`);
+            box.onclick = () => {
+                const speaker = (start + idx) % 4 < 2 ? '叙述：' : '对话：';
+                box.innerHTML = `
+                    <div style="font-weight:bold; color:var(--primary); margin-bottom:10px;">${speaker}</div>
+                    <div style="font-size:26px; margin:15px 0;">${generateRuby(line.cn, line.py)}</div>
+                    <div style="font-size:18px; color:#666; font-style:italic; margin-top:10px;">${line.en}</div>`;
+                box.onclick = null;
+                box.style.cursor = 'default';
+                speakLine(line.cn);
+            };
+        });
+    }
+
+    function playCurrentCard() {
+        const start = currentIndex * 2;
+        const cardLines = database[0].lines.slice(start, start + 2);
+        window.speechSynthesis.cancel();
+        let delay = 0;
+        cardLines.forEach(line => {
+            setTimeout(() => speakLine(line.cn), delay);
+            delay += line.cn.length * 60 + 800;
+        });
+    }
+
+    function speakLine(text) {
+        window.speechSynthesis.cancel();
+        const ut = new SpeechSynthesisUtterance(text);
+        ut.lang = 'zh-CN';
+        ut.rate = 0.85;
+        window.speechSynthesis.speak(ut);
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        clearInterval(timer);
+        document.getElementById('timer-bar').style.width = '0%';
+        document.getElementById('rush-score-ui').style.display = 'none';
+        document.querySelectorAll('.nav-btns button').forEach(b => b.classList.remove('active-mode'));
+        ['study-ui','list-container','quiz-container'].forEach(id => document.getElementById(id).style.display = 'none');
+
+        if(mode === 'study') {
+            document.getElementById('btn-study').classList.add('active-mode');
+            document.getElementById('study-ui').style.display = 'flex';
+            render();
+        } else if(['quiz','rush','mistake'].includes(mode)) {
+            document.getElementById(`btn-${mode === 'mistake' ? 'mistake' : mode}`).classList.add('active-mode');
+            document.getElementById('quiz-container').style.display = 'block';
+            if(mode === 'rush') {
+                score = 0;
+                document.getElementById('rush-score-ui').style.display = 'block';
+                document.getElementById('rush-score').innerText = 0;
+                startRushTimer();
+            }
+            startQuiz();
+        } else if(mode === 'list') {
+            document.getElementById('btn-list').classList.add('active-mode');
+            document.getElementById('list-container').style.display = 'block';
+            renderList();
+        }
+    }
+
+    function startRushTimer() {
+        let t = 30; // 改为30秒
+        timer = setInterval(() => {
+            t--;
+            document.getElementById('timer-bar').style.width = ((30 - t)/30 * 100) + '%';
+            if(t <= 0) {
+                clearInterval(timer);
+                playEncouragement("时间到！最终得分: " + score);
+                launchConfetti();
+                setMode('study');
+            }
+        }, 1000);
+    }
+
+    function startQuiz() {
+        const allLines = database[0].lines;
+        let line;
+        if(currentMode === 'mistake') {
+            if(mistakes.length === 0) {
+                playEncouragement("错题全部答对！太棒了！");
+                launchConfetti();
+                setMode('study');
+                return;
+            }
+            line = mistakes[0];
+        } else {
+            line = allLines[Math.floor(Math.random() * allLines.length)];
+        }
+        const isZh = Math.random() > 0.5;
+        document.getElementById('quiz-prompt').innerText = isZh ? line.cn : line.en;
+
+        let opts = [line];
+        while(opts.length < 4) {
+            let r = allLines[Math.floor(Math.random() * allLines.length)];
+            if(!opts.some(o => o.cn === r.cn)) opts.push(r);
+        }
+        opts.sort(() => Math.random() - 0.5);
+
+        document.getElementById('quiz-options').innerHTML = opts.map(o => `
+            <button class="quiz-option" onclick="checkAnswer(this, '${o.cn.replace(/'/g, "\\'")}', '${line.cn.replace(/'/g, "\\'")}')">${isZh ? o.en : o.cn}</button>
+        `).join('');
+    }
+
+    function checkAnswer(btn, selected, correct) {
+        if(selected === correct) {
+            playTone(880, 0.2);
+            btn.style.background = "#c8e6c9";
+            if(currentMode === 'rush') {
+                score++;
+                document.getElementById('rush-score').innerText = score;
+            }
+            if(currentMode === 'mistake') {
+                mistakes.shift();
+                updateMistakeCount();
+                if(mistakes.length === 0) {
+                    setTimeout(() => {
+                        playEncouragement("错题全部答对！恭喜你！");
+                        launchConfetti();
+                        setMode('study');
+                    }, 800);
+                    return;
+                }
+            }
+            setTimeout(startQuiz, 800);
+        } else {
+            playTone(220, 0.4);
+            btn.style.background = "#ffcdd2";
+            if(currentMode !== 'mistake') {
+                const wrongLine = database[0].lines.find(l => l.cn === correct);
+                if(wrongLine && !mistakes.some(m => m.cn === correct)) {
+                    mistakes.push(wrongLine);
+                    updateMistakeCount();
+                }
+            }
+        }
+    }
+
+    function updateMistakeCount() {
+        document.getElementById('mistake-count').innerText = mistakes.length;
+    }
+
+    function playEncouragement(text = "") {
+        const msgs = ["你太棒了！", "继续加油！", "真厉害！", "太棒了，继续保持！"];
+        speakText(text + msgs[Math.floor(Math.random() * msgs.length)]);
+    }
+
+    function renderList() {
+        let html = '<h2>📜 环境保护对话（分组卡片）</h2>';
+        for(let i = 0; i < numGroups; i++) {
+            const firstLine = database[0].lines[i*2].cn.substring(0, 35) + (database[0].lines[i*2].cn.length > 35 ? '...' : '');
+            html += `
+                <div style="padding:15px; border-bottom:1px solid #eee; cursor:pointer;" onclick="currentIndex = ${i}; setMode('study');">
+                    <span style="font-size:24px;">🏔️</span> <b>第${i+1}卡：${firstLine}</b>
+                </div>`;
+        }
+        document.getElementById('list-content').innerHTML = html;
+    }
+
+    function next() {
+        currentIndex = (currentIndex + 1) % numGroups;
+        render();
+    }
+
+    function prev() {
+        currentIndex = (currentIndex - 1 + numGroups) % numGroups;
+        render();
+    }
+
+    function enterApp() {
+        document.getElementById('cover-page').style.display = 'none';
+        render();
+    }
+
+    window.onload = () => { initStars(); };
+</script>
+</body>
+</html>
