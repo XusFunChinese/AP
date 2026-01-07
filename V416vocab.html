@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, landscape=yes">
+    <title>环境保护相关词汇 (45 Words) - XUSFUNCHINESE</title>
+    <style>
+        :root {
+            --primary: #01579b; 
+            --accent: #e1f5fe;  
+            --gold: #fbc02d;
+            --pinyin: #d0021b; 
+            --night-sky: radial-gradient(circle at center, #001f3f 0%, #000510 100%);
+        }
+        
+        body { 
+            margin: 0; 
+            font-family: "Arial Black", "Segoe UI", Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #0277bd 0%, #002f6c 100%); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* 水印：xuschinese（淡、旋转、居中、不影响交互） */
+        body::after {
+            content: "xuschinese";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 18vw;
+            color: rgba(255, 255, 255, 0.06);
+            font-weight: bold;
+            letter-spacing: 15px;
+            pointer-events: none;
+            z-index: -1;
+            white-space: nowrap;
+            opacity: 0.6;
+            font-family: "Arial Black", sans-serif;
+        }
+
+        /* 所有汉字强制使用楷体 */
+        ruby, .list-row b, .cover-title, .cover-subtitle, #hint-box div, #display-area {
+            font-family: "KaiTi", "STKai", "楷体", "楷体_GB2312", "SimKai", serif !important;
+            font-weight: normal;
+        }
+
+        #cover-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--night-sky); z-index: 5000; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; transition: opacity 0.8s ease-out, visibility 0.8s; overflow: hidden;
+        }
+
+        .star {
+            position: absolute; top: 50%; left: 50%; width: 2px; height: 2px;
+            background: white; border-radius: 50%; box-shadow: 0 0 10px #fff;
+            animation: shoot linear infinite;
+        }
+
+        @keyframes shoot {
+            0% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(1000px); opacity: 0; width: 160px; }
+        }
+
+        .cover-content { text-align: center; z-index: 10; padding: 20px; }
+        .cover-title { font-size: 10vw; color: var(--gold); line-height: 1.1; margin: 0; font-weight: 900; text-shadow: 0 0 30px rgba(251,192,45,0.8), 0 0 60px rgba(251,192,45,0.4); animation: glow 2s infinite alternate; }
+        .cover-subtitle { font-size: 7vw; color: white; margin-top: 5px; font-weight: 900; }
+        @keyframes glow { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+        header { 
+            background: rgba(255,255,255,0.95); padding: 10px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; 
+        }
+        .nav-btns button { 
+            padding: 8px 12px; margin-right: 5px; border-radius: 20px; border: 2px solid var(--primary); 
+            cursor: pointer; font-weight: bold; background: white; color: var(--primary);
+        }
+        .active-mode { background: var(--primary) !important; color: white !important; }
+
+        main { flex: 1; display: flex; padding: 20px; gap: 15px; overflow: hidden; }
+        #left-panel { flex: 1; background: rgba(255,255,255,0.95); border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid var(--accent); }
+        #right-panel { flex: 1.6; background: rgba(255,255,255,0.95); border-radius: 30px; padding: 30px; display: flex; flex-direction: column; overflow-y: auto; border: 4px solid var(--accent); position: relative; }
+
+        ruby { ruby-align: center; font-size: 50px; margin: 0 4px; line-height: 2.2; font-weight: 600; }
+        rt { font-size: 20px; color: var(--pinyin); font-weight: bold; }
+        .eng-hint { display: block; font-size: 26px; color: #333; margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 10px; }
+        #emoji-display { font-size: 130px; margin-bottom: 20px; }
+        
+        .option-btn { background: white; border: 2px solid var(--primary); padding: 15px; margin: 8px 0; border-radius: 15px; cursor: pointer; font-size: 20px; width: 100%; transition: 0.2s; }
+        
+        #scroll-view { display: none; width: 100%; overflow-y: auto; padding: 30px; background: white; border-radius: 30px; }
+        .list-row { border-bottom: 1px solid var(--accent); padding: 15px; cursor: pointer; display: flex; align-items: center; transition: background 0.2s; }
+        .list-row:hover { background: var(--accent); }
+        .hidden { display: none !important; }
+        #timer-display { font-size: 24px; color: #d32f2f; font-weight: bold; margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="cover-page" onclick="enterApp()">
+    <div id="star-container"></div>
+    <div class="cover-content">
+        <h1 class="cover-title">环保</h1>
+        <div class="cover-subtitle">45 Vocabulary Words</div>
+        <div style="color:white; margin-top:20px; letter-spacing:3px;">CLICK TO START</div>
+    </div>
+</div>
+
+<header>
+    <div class="nav-btns">
+        <button onclick="setMode('study')" id="btn-study">📖 Learn</button>
+        <button onclick="setMode('review')" id="btn-review">🔄 Review</button>
+        <button onclick="setMode('quiz')" id="btn-quiz">⚡ Quiz</button>
+        <button onclick="setMode('rush')" id="btn-rush">🔥 Rush</button>
+        <button onclick="setMode('mistakes')" id="btn-mistakes">❌ Mistakes</button>
+        <button onclick="setMode('list')" id="btn-list">📜 List</button>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <span id="timer-display" class="hidden">00:30</span>
+        <span style="font-weight: bold; color: var(--primary);">Score: <span id="score-val">0</span></span>
+    </div>
+</header>
+
+<main>
+    <div id="main-ui" style="display: flex; width: 100%; gap: 15px;">
+        <div id="left-panel">
+            <div id="emoji-display">✨</div>
+            <button onclick="speakItem(true)" style="padding: 15px 40px; border-radius: 50px; cursor: pointer; background: var(--primary); color: white; border: none; font-weight: bold; font-size: 20px;">🔊 Play Sound</button>
+        </div>
+        <div id="right-panel">
+            <div id="display-area"></div>
+            <div id="hint-box" style="margin-top:20px; padding:15px; background:#fffde7; border-left:8px solid var(--gold); border-radius:12px;"></div>
+            <div id="interaction-area" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+    <div id="scroll-view"></div>
+</main>
+
+<script>
+    const database = [
+        ["保护", "bǎohù", "to protect, to safeguard", "🛡️", {cn: "我们要保护地球。", py: "wǒmen yào bǎohù dìqiú", en: "We must protect the Earth."}],
+        ["节约", "jiéyuē", "to economize, to save, to conserve", "💡", {cn: "我们要节约水。", py: "wǒmen yào jiéyuē shuǐ", en: "We should conserve water."}],
+        ["能源", "néngyuán", "energy, energy source", "⚡", {cn: "太阳能是一种能源。", py: "tàiyángnéng shì yī zhǒng néngyuán", en: "Solar energy is a type of energy source."}],
+        ["爬山", "pá shān", "to hike in the mountains, to climb a mountain", "🏔️", {cn: "周末我去爬山。", py: "zhōumò wǒ qù pá shān", en: "I go mountain hiking on weekends."}],
+        ["有益", "yǒuyì", "beneficial, useful", "✅", {cn: "爬山对身体有益。", py: "pá shān duì shēntǐ yǒuyì", en: "Mountain climbing is beneficial to the body."}],
+        ["于", "yú", "towards, in, on, at (comparison)", "➡️", {cn: "保护环境对我们有益。", py: "bǎohù huánjìng duì wǒmen yǒuyì", en: "Protecting the environment is beneficial to us."}],
+        ["段", "duàn", "section, segment, part (measure word)", "📏", {cn: "我每天锻炼一段。", py: "wǒ měitiān duànliàn yī duàn", en: "I exercise for a period every day."}],
+        ["推", "tuī", "to push, to shove", "👉", {cn: "请把门推开。", py: "qǐng bǎ mén tuī kāi", en: "Please push the door open."}],
+        ["空气", "kōngqì", "air, atmosphere", "💨", {cn: "今天的空气不好。", py: "jīntiān de kōngqì bù hǎo", en: "Today's air is not good."}],
+        ["雾霾", "wùmái", "smog", "🌫️", {cn: "北京有雾霾。", py: "běijīng yǒu wùmái", en: "Beijing has smog."}],
+        ["回收", "huíshōu", "to recycle", "♻️", {cn: "我们要回收瓶子。", py: "wǒmen yào huíshōu píngzi", en: "We should recycle bottles."}],
+        ["筒", "tǒng", "thick tube-shaped container", "🗑️", {cn: "这是回收筒。", py: "zhè shì huíshōu tǒng", en: "This is a recycling bin."}],
+        ["扔", "rēng", "to throw, to toss, to throw away", "🗑️", {cn: "不要乱扔垃圾。", py: "bù yào luàn rēng lājī", en: "Don't litter."}],
+        ["瓶装水", "píngzhuāng shuǐ", "bottled water", "🍼", {cn: "我喝瓶装水。", py: "wǒ hē píngzhuāng shuǐ", en: "I drink bottled water."}],
+        ["地球", "dìqiú", "the earth, the globe", "🌍", {cn: "地球是我们家。", py: "dìqiú shì wǒmen jiā", en: "The Earth is our home."}],
+        ["亮", "liàng", "bright, light", "💡", {cn: "太阳很亮。", py: "tàiyáng hěn liàng", en: "The sun is very bright."}],
+        ["太阳", "tàiyáng", "sun", "☀️", {cn: "今天太阳很大。", py: "jīntiān tàiyáng hěn dà", en: "The sun is very strong today."}],
+        ["太阳能", "tàiyángnéng", "solar energy, solar power", "☀️⚡", {cn: "我们用太阳能发电。", py: "wǒmen yòng tàiyángnéng fā diàn", en: "We use solar energy to generate electricity."}],
+        ["板", "bǎn", "board, plank, panel", "🪵", {cn: "太阳能板很大。", py: "tàiyángnéng bǎn hěn dà", en: "Solar panels are very large."}],
+        ["发电", "fā diàn", "to generate electricity", "⚡", {cn: "太阳能可以发电。", py: "tàiyángnéng kěyǐ fā diàn", en: "Solar energy can generate electricity."}],
+        ["国家", "guójiā", "country, nation", "🇨🇳", {cn: "中国是我的国家。", py: "zhōngguó shì wǒ de guójiā", en: "China is my country."}],
+        ["危机", "wēijī", "crisis", "⚠️", {cn: "我们面临环境危机。", py: "wǒmen miànlín huánjìng wēijī", en: "We are facing an environmental crisis."}],
+        ["风", "fēng", "wind", "🌬️", {cn: "今天有大风。", py: "jīntiān yǒu dà fēng", en: "It's very windy today."}],
+        ["石油", "shíyóu", "petroleum, oil", "🛢️", {cn: "石油是一种能源。", py: "shíyóu shì yī zhǒng néngyuán", en: "Petroleum is a type of energy source."}],
+        ["煤", "méi", "coal", "⚫", {cn: "煤污染空气。", py: "méi wūrǎn kōngqì", en: "Coal pollutes the air."}],
+        ["规定", "guīdìng", "to regulate; rules and regulations", "📜", {cn: "学校有许多规定。", py: "xuéxiào yǒu xǔduō guīdìng", en: "The school has many regulations."}],
+        ["公共场所", "gōnggòng chǎngsuǒ", "public place", "🏛️", {cn: "公共场所不能吸烟。", py: "gōnggòng chǎngsuǒ bù néng xīyān", en: "No smoking in public places."}],
+        ["暖气", "nuǎnqì", "heating", "🔥", {cn: "冬天要开暖气。", py: "dōngtiān yào kāi nuǎnqì", en: "We need to turn on the heating in winter."}],
+        ["温度", "wēndù", "temperature", "🌡️", {cn: "今天的温度很高。", py: "jīntiān de wēndù hěn gāo", en: "Today's temperature is very high."}],
+        ["度", "dù", "degree (measure word)", "📏", {cn: "现在三十度。", py: "xiànzài sānshí dù", en: "It's 30 degrees now."}],
+        ["赞成", "zànchéng", "to approve, to support", "👍", {cn: "我赞成你的意见。", py: "wǒ zànchéng nǐ de yìjiàn", en: "I approve of your opinion."}],
+        ["出汗", "chū hàn", "to sweat", "💦", {cn: "运动以后我出汗。", py: "yùndòng yǐhòu wǒ chū hàn", en: "I sweat after exercising."}],
+        ["餐具", "cānjù", "tableware, eating utensils", "🍽️", {cn: "请用自己的餐具。", py: "qǐng yòng zìjǐ de cānjù", en: "Please use your own tableware."}],
+        ["一次性", "yícìxìng", "one-time, disposable", "🗑️", {cn: "不要用一次性餐具。", py: "bù yào yòng yícìxìng cānjù", en: "Don't use disposable tableware."}],
+        ["砍", "kǎn", "to cut, to chop", "🪓", {cn: "不要乱砍树木。", py: "bù yào luàn kǎn shùmù", en: "Don't randomly cut down trees."}],
+        ["超市", "chāoshì", "supermarket", "🏪", {cn: "超市有许多塑料袋。", py: "chāoshì yǒu xǔduō sùliào dài", en: "Supermarkets have many plastic bags."}],
+        ["塑料袋", "sùliào dài", "plastic bag", "🛍️", {cn: "塑料袋造成污染。", py: "sùliào dài zào chéng wūrǎn", en: "Plastic bags cause pollution."}],
+        ["减少", "jiǎnshǎo", "to reduce, to decrease", "📉", {cn: "我们要减少使用塑料袋。", py: "wǒmen yào jiǎnshǎo shǐyòng sùliào dài", en: "We should reduce the use of plastic bags."}],
+        ["污染", "wūrǎn", "to pollute; pollution", "☠️", {cn: "塑料袋污染环境。", py: "sùliào dài wūrǎn huánjìng", en: "Plastic bags pollute the environment."}],
+        ["造成", "zào chéng", "to cause, to give rise to", "➡️", {cn: "砍树造成水土流失。", py: "kǎn shù zào chéng shuǐtǔ liúshī", en: "Cutting trees causes soil erosion."}],
+        ["比如", "bǐrú", "for example", "💡", {cn: "比如，我们可以用布袋。", py: "bǐrú, wǒmen kěyǐ yòng bù dài", en: "For example, we can use cloth bags."}],
+        ["随手", "suíshǒu", "conveniently, without extra effort", "✋", {cn: "随手关灯可以节约能源。", py: "suíshǒu guān dēng kěyǐ jiéyuē néngyuán", en: "Turning off lights conveniently can save energy."}],
+        ["加油", "jiā yóu", "to make an extra effort; come on", "💪", {cn: "保护环境，大家加油！", py: "bǎohù huánjìng, dàjiā jiā yóu", en: "Protect the environment, everyone come on!"}],
+        ["马克", "Mǎkè", "Mark (name)", "👨", {cn: "马克很注意环保。", py: "Mǎkè hěn zhùyì huánbǎo", en: "Mark pays great attention to environmental protection."}],
+        ["摄氏", "Shèshì", "Celsius", "🌡️", {cn: "今天是摄氏三十度。", py: "jīntiān shì Shèshì sānshí dù", en: "Today is 30 degrees Celsius."}]
+    ];
+
+    let currentMode = 'study', currentIndex = 0, score = 0, timer = null, timeLeft = 30;
+    let mistakes = [];
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playEffect(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if(type === 'win') {
+            osc.frequency.setValueAtTime(987, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1318, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        } else {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        }
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function initStars() {
+        const container = document.getElementById('star-container');
+        for(let i=0; i<100; i++) {
+            let s = document.createElement('div'); s.className = 'star';
+            s.style.setProperty('--angle', Math.random() * 360 + 'deg');
+            s.style.animationDuration = Math.random() * 1.5 + 0.8 + 's';
+            container.appendChild(s);
+        }
+    }
+
+    function enterApp() {
+        document.getElementById('cover-page').style.opacity = '0';
+        setTimeout(() => { document.getElementById('cover-page').style.visibility = 'hidden'; }, 800);
+        setMode('study');
+    }
+
+    function speakText(text, callback = null) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(text);
+        m.lang = 'zh-CN'; m.rate = 0.85;
+        if (callback) m.onend = callback;
+        window.speechSynthesis.speak(m);
+    }
+
+    function speakItem(withExample = false) {
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        if (withExample) speakText(item[0], () => setTimeout(() => speakText(item[4].cn), 400));
+        else speakText(item[0]);
+    }
+
+    function speakExample() {
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        speakText(item[4].cn);
+    }
+
+    function setMode(m, jumpIndex = 0) {
+        currentMode = m; 
+        currentIndex = jumpIndex; 
+        clearInterval(timer);
+        document.querySelectorAll('.nav-btns button').forEach(b => b.classList.remove('active-mode'));
+        if(document.getElementById('btn-'+m)) document.getElementById('btn-'+m).classList.add('active-mode');
+        document.getElementById('timer-display').classList.add('hidden');
+        score = 0;
+        document.getElementById('score-val').innerText = "0";
+
+        if (m === 'rush') {
+            timeLeft = 30;
+            document.getElementById('timer-display').classList.remove('hidden');
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
+                if (timeLeft <= 0) { 
+                    clearInterval(timer); 
+                    const praises = ["时间到！", "不错哦！"];
+                    speakText(praises[Math.floor(Math.random()*praises.length)]);
+                    setMode('study'); 
+                }
+            }, 1000);
+        }
+
+        if(m === 'list') {
+            document.getElementById('main-ui').classList.add('hidden');
+            document.getElementById('scroll-view').style.display = 'block';
+            renderList();
+        } else {
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('scroll-view').style.display = 'none';
+            render();
+        }
+    }
+
+    function generateRubyHtml(text, pinyinStr) {
+        const chars = text.split('');
+        const pys = pinyinStr.split(' ');
+        let html = "";
+        let pyIdx = 0;
+        chars.forEach(c => {
+            if(/[\u4e00-\u9fa5]/.test(c)) {
+                html += `<ruby>${c}<rt>${pys[pyIdx] || ''}</rt></ruby>`;
+                pyIdx++;
+            } else {
+                html += c;
+            }
+        });
+        return html;
+    }
+
+    function showMainPinyinAndMeaning() {
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        const display = document.getElementById('display-area');
+        display.innerHTML = generateRubyHtml(item[0], item[1]) + `<span class="eng-hint">${item[2]}</span>`;
+        display.onclick = null;
+        display.style.cursor = 'default';
+        speakItem(false);
+    }
+
+    function showExampleFull() {
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        const hint = document.getElementById('hint-box');
+        hint.innerHTML = `<div style="font-size:26px;">${generateRubyHtml(item[4].cn, item[4].py)}</div><div style="font-style:italic; color:#666;">${item[4].en}</div><div style="font-size:12px; color:#999; margin-top:5px; text-align:right;">🔊 点击朗读例句</div>`;
+        hint.onclick = () => speakExample();
+        speakExample();
+    }
+
+    function render() {
+        const display = document.getElementById('display-area');
+        const interaction = document.getElementById('interaction-area');
+        const hint = document.getElementById('hint-box');
+        display.innerHTML = ""; interaction.innerHTML = ""; hint.innerHTML = "";
+
+        if (currentMode === 'mistakes' && mistakes.length === 0) {
+            display.innerHTML = "<h2 style='text-align:center; color:#d32f2f;'>错题本为空！</h2>";
+            interaction.innerHTML = `<button class="option-btn" onclick="setMode('study')" style="background:var(--primary); color:white;">返回学习模式</button>`;
+            document.getElementById('emoji-display').innerText = "📭";
+            return;
+        }
+
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        document.getElementById('emoji-display').innerText = item[3];
+
+        if (currentMode === 'study') {
+            // 主词：初始纯汉字，点击显示拼音+含义
+            display.innerHTML = `<div style="text-align:center; cursor:pointer;" onclick="showMainPinyinAndMeaning()">
+                <h1 style="font-size:80px; margin:0;">${item[0]}</h1>
+                <p style="color:#888; margin-top:20px;">点击显示拼音和含义</p>
+            </div>`;
+
+            // 例句：初始纯汉字，点击显示拼音+英文
+            hint.innerHTML = `<div style="text-align:center; cursor:pointer;" onclick="showExampleFull()">
+                <div style="font-size:26px; margin-bottom:10px;">${item[4].cn}</div>
+                <p style="color:#888; font-size:16px;">点击显示拼音和翻译</p>
+            </div>`;
+
+            interaction.innerHTML = `<button class="option-btn" onclick="nextCard()">下一张 →</button>`;
+            speakItem(false); // 初始朗读主词
+        }
+        else if (currentMode === 'review') {
+            display.innerHTML = `<h1 style="font-size:80px; cursor:pointer;" onclick="revealReview()">${item[0]}</h1>`;
+            interaction.innerHTML = `<p style="text-align:center; color:#888;">点击汉字显示详情</p>`;
+        }
+        else {
+            let isSentence = Math.random() > 0.5;
+            let isEnToCn = Math.random() > 0.5;
+            if (currentMode === 'mistakes') {
+                isSentence = mistakes[currentIndex].isSentence;
+                isEnToCn = mistakes[currentIndex].isEnToCn;
+            }
+
+            let questText, correctAns, speakTarget;
+            if (isSentence) {
+                questText = isEnToCn ? item[4].en : item[4].cn;
+                correctAns = isEnToCn ? item[4].cn : item[4].en;
+                speakTarget = item[4].cn;
+            } else {
+                questText = isEnToCn ? item[2] : item[0];
+                correctAns = isEnToCn ? item[0] : item[2];
+                speakTarget = item[0];
+            }
+
+            display.innerHTML = `<h2 style="font-size:36px; text-align:center;">${questText}</h2>`;
+            
+            let choices = [correctAns];
+            while(choices.length < 4) {
+                let r = database[Math.floor(Math.random()*database.length)];
+                let val;
+                if (isSentence) {
+                    val = isEnToCn ? r[4].cn : r[4].en;
+                } else {
+                    val = isEnToCn ? r[0] : r[2];
+                }
+                if(!choices.includes(val)) choices.push(val);
+            }
+            choices.sort(() => Math.random() - 0.5);
+
+            choices.forEach(c => {
+                const b = document.createElement('button'); b.className = 'option-btn'; b.innerText = c;
+                b.onclick = () => {
+                    if(c === correctAns) {
+                        playEffect('win');
+                        speakText(speakTarget);
+                        if (currentMode !== 'mistakes') score += 10;
+                        document.getElementById('score-val').innerText = score;
+                        b.style.background = "#4caf50"; b.style.color = "white"; 
+
+                        if (currentMode === 'mistakes') {
+                            mistakes.splice(currentIndex, 1);
+                            if (mistakes.length === 0) {
+                                setTimeout(() => {
+                                    speakText("错题全部答对！太棒了！");
+                                    setMode('study');
+                                }, 800);
+                                return;
+                            }
+                        }
+                        setTimeout(nextCard, 800);
+                    } else { 
+                        playEffect('fail');
+                        b.style.background = "#f44336"; b.style.color = "white";
+                        if (currentMode !== 'mistakes') {
+                            const newMistake = {index: itemIndex, isSentence, isEnToCn};
+                            if (!mistakes.some(m => m.index === newMistake.index && m.isSentence === newMistake.isSentence && m.isEnToCn === newMistake.isEnToCn)) {
+                                mistakes.push(newMistake);
+                            }
+                        }
+                    }
+                };
+                interaction.appendChild(b);
+            });
+        }
+    }
+
+    function revealReview() {
+        const itemIndex = currentMode === 'mistakes' ? mistakes[currentIndex].index : currentIndex;
+        const item = database[itemIndex];
+        const display = document.getElementById('display-area');
+        const hint = document.getElementById('hint-box');
+        display.innerHTML = generateRubyHtml(item[0], item[1]) + `<span class="eng-hint">${item[2]}</span>`;
+        hint.innerHTML = `<div style="font-size:26px;">${generateRubyHtml(item[4].cn, item[4].py)}</div><div style="font-style:italic; color:#666;">${item[4].en}</div><div style="font-size:12px; color:#999; margin-top:5px; text-align:right;">🔊 点击朗读例句</div>`;
+        hint.onclick = () => speakExample();
+        speakItem(true);
+        document.getElementById('interaction-area').innerHTML = `<button class="option-btn" onclick="nextCard()">下一张 →</button>`;
+    }
+
+    function nextCard() {
+        if (currentMode === 'mistakes') {
+            currentIndex++;
+            if (currentIndex >= mistakes.length) {
+                setMode('study');
+                return;
+            }
+        } else {
+            currentIndex++;
+            if (currentIndex >= database.length) {
+                currentIndex = 0;
+                const praises = ["一轮完成！太棒了！", "你真厉害！", "继续加油！"];
+                speakText(praises[Math.floor(Math.random()*praises.length)]);
+            }
+        }
+        render();
+    }
+
+    function renderList() {
+        const view = document.getElementById('scroll-view');
+        view.innerHTML = "<h2>📜 环境保护相关词汇 (45词)</h2><p style='color:#666;'>点击任意行直接学习该词</p>";
+        database.forEach((it, idx) => {
+            const r = document.createElement('div'); r.className = 'list-row';
+            r.innerHTML = `<div style="min-width:40px; color:#999;">${idx+1}</div>
+                <div style="font-size:32px; margin-right:15px;">${it[3]}</div>
+                <div style="flex:1;"><b>${it[0]}</b> <span style="color:var(--pinyin);">[${it[1]}]</span><br><small>${it[2]}</small></div>`;
+            r.onclick = () => { setMode('study', idx); };
+            view.appendChild(r);
+        });
+    }
+
+    window.onload = () => { initStars(); };
+</script>
+</body>
+</html>
